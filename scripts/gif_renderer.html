@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><style>html,body,canvas{margin:0;width:100%;height:100%;overflow:hidden;background:#eee7dc;display:block}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script></head><body><canvas id="preview"></canvas>
+<script type="module">
+import * as THREE from 'three'
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import { clone } from 'three/addons/utils/SkeletonUtils.js'
+
+const VIEWS = { full:[[1.6,1.25,4.6],[0,.92,0]], head:[[.5,1.72,1.45],[0,1.58,0]], upper:[[.9,1.45,2.6],[0,1.25,.1]], floor:[[2.3,1.9,2.7],[0,.25,0]] }
+const id = new URLSearchParams(location.search).get('id'); const width = Number(new URLSearchParams(location.search).get('w')) || 240; const height = Number(new URLSearchParams(location.search).get('h')) || 200
+const renderer = new THREE.WebGLRenderer({ canvas: document.querySelector('canvas'), antialias:true }); renderer.setSize(width,height,false); renderer.setPixelRatio(1); renderer.outputColorSpace = THREE.SRGBColorSpace
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xeee7dc); scene.add(new THREE.HemisphereLight(0xfff6ea,0x8a7560,1.9)); const sun = new THREE.DirectionalLight(0xfff1dc,2.1); sun.position.set(2,3,4); scene.add(sun)
+const floor = new THREE.Mesh(new THREE.CircleGeometry(2.2,48),new THREE.MeshStandardMaterial({color:0xe4dbcd,roughness:1})); floor.rotation.x=-Math.PI/2; scene.add(floor)
+const camera = new THREE.PerspectiveCamera(30,width/height,.1,20)
+function chair() { const group=new THREE.Group(); const material=new THREE.MeshStandardMaterial({color:0xcbb390,roughness:.65}); const box=(w,h,d,x,y,z)=>{const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);mesh.position.set(x,y,z);group.add(mesh)}; box(.46,.04,.44,0,.43,-.12);box(.46,.5,.04,0,.7,-.34);for(const x of[-.2,.2])for(const z of[-.31,.07])box(.035,.41,.035,x,.205,z);return group }
+try {
+  const library = await fetch('/public/assets/desk-break/exercises.json').then(response => response.json()); const exercise = library.exercises.find(item => item.id === id); if (!exercise) throw new Error(`Unknown exercise: ${id}`)
+  const gltf = await new GLTFLoader().loadAsync('/public/assets/desk-break/exercises.glb'); const figure=clone(gltf.scene); figure.traverse(object=>{if(object.isSkinnedMesh)object.frustumCulled=false}); scene.add(figure); if(exercise.seated)scene.add(chair())
+  const view=VIEWS[exercise.view]||VIEWS.full; camera.position.set(...view[0]);camera.lookAt(...view[1]); const clip=THREE.AnimationClip.findByName(gltf.animations,exercise.id);if(!clip)throw new Error(`Missing clip: ${id}`);const mixer=new THREE.AnimationMixer(figure);const action=mixer.clipAction(clip);action.play()
+  window.__gifDuration = clip.duration; window.__renderGifFrame = seconds => { mixer.setTime(seconds % clip.duration); renderer.render(scene,camera) }; window.__renderGifFrame(0); window.__gifPreviewReady = true
+} catch (error) { document.body.dataset.error = String(error); console.error(error) }
+</script></body></html>
