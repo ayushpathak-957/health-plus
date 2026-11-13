@@ -1,0 +1,38 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><style>body{margin:0}canvas{display:block}</style>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script></head><body><canvas></canvas><script type="module">
+import * as THREE from 'three'
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js'
+import { createAvatar, loadAvatar } from '/src/three/avatarRig.js'
+const options = new URLSearchParams(location.search)
+try {
+  const library = await fetch('/public/assets/desk-break/exercises.json').then(r=>r.json())
+  const avatar = options.get('avatar')
+  const source = await new GLTFLoader().loadAsync('/public/assets/desk-break/exercises.glb')
+  const target = avatar === 'wood' ? null : await loadAvatar(avatar, '/public/assets/avatars/')
+  const adapter = target ? createAvatar(source.scene, target) : null, mixer = new THREE.AnimationMixer(source.scene)
+  const scene = new THREE.Scene(); scene.background = new THREE.Color(0xf2ede4); scene.add(adapter ? adapter.figure : source.scene)
+  scene.add(new THREE.HemisphereLight(0xfff7e9,0x756553,2.1)); const sun=new THREE.DirectionalLight(0xfff2df,2.5);sun.position.set(2,4,4);scene.add(sun)
+  const chair = new THREE.Group(), mat=new THREE.MeshStandardMaterial({color:0xcbb390,roughness:.6})
+  const box=(w,h,d,x,y,z)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);chair.add(m)}
+  box(.46,.04,.44,0,.43,-.12);box(.46,.5,.04,0,.7,-.34);for(const x of[-.2,.2])for(const z of[-.31,.07])box(.035,.41,.035,x,.205,z);scene.add(chair)
+  const camera=new THREE.PerspectiveCamera(35,Number(options.get('w'))/Number(options.get('h')),.1,30)
+  const renderer=new THREE.WebGLRenderer({canvas:document.querySelector('canvas'),antialias:true,preserveDrawingBuffer:true});renderer.setSize(Number(options.get('w')),Number(options.get('h')));renderer.setPixelRatio(1)
+  const views={full:[[1.6,1.25,4.6],[0,.92,0]],head:[[.5,1.72,1.45],[0,1.58,0]],upper:[[.9,1.45,2.6],[0,1.25,.1]],floor:[[2.3,1.9,2.7],[0,.25,0]]}
+  const exerciseViews={'standing-cat-cow':[[1.6,1.02,4.8],[0,.98,0]]}
+  let action
+  window.__setExercise = id => {
+    const ex=library.exercises.find(e=>e.id===id),clip=THREE.AnimationClip.findByName(source.animations,id)
+    if(!ex||!clip)throw new Error(`Missing exercise ${id}`)
+    mixer.stopAllAction(); action=mixer.clipAction(clip);action.reset().setLoop(ex.once?THREE.LoopOnce:THREE.LoopRepeat,ex.once?1:Infinity);action.clampWhenFinished=!!ex.once;action.play()
+    chair.visible=!!ex.seated
+    const view=exerciseViews[id]||views[ex.view]||views.full;camera.position.set(...view[0]);camera.lookAt(...view[1])
+    return {duration:clip.duration,once:!!ex.once}
+  }
+  window.__renderAvatarFrame = seconds => {
+    action.reset().play();mixer.setTime(seconds);adapter?.update();scene.updateMatrixWorld(true)
+    scene.traverse(o=>{if(o.isBone&&!o.matrixWorld.elements.every(Number.isFinite))throw new Error('Invalid bone transform')})
+    renderer.render(scene,camera);return renderer.domElement.toDataURL('image/png').split(',')[1]
+  }
+  window.__gifPreviewReady=true
+} catch(error) { window.__gifError=String(error); console.error(error) }
+</script></body></html>

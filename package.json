@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "validate-library": "node scripts/validate_library.mjs",
-    "generate-previews": "python scripts/generate_gif_previews.py"
+    "generate-previews": "python scripts/generate_gif_previews.py",
+    "generate-avatar-previews": "python scripts/generate_avatar_previews.py"
   },
   "dependencies": {
     "@types/three": "^0.181.0",

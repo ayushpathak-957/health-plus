@@ -3,3 +3,4 @@ dist/
 .desk-break-upstream/
 __pycache__/
 *.py[cod]
+.artifacts/

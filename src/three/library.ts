@@ -9,6 +9,12 @@ export const VIEWS: Record<string, [[number, number, number], [number, number, n
   full: [[1.6, 1.25, 4.6], [0, .92, 0]], head: [[.5, 1.72, 1.45], [0, 1.58, 0]],
   upper: [[.9, 1.45, 2.6], [0, 1.25, .1]], floor: [[2.3, 1.9, 2.7], [0, .25, 0]],
 }
+// This forward-fold motion reads best from a level eye-line instead of the
+// slightly top-down general standing angle.
+const EXERCISE_VIEWS: Record<string, [[number, number, number], [number, number, number]]> = {
+  'standing-cat-cow': [[1.6, 1.02, 4.8], [0, .98, 0]],
+}
+export function viewFor(exercise: Exercise) { return EXERCISE_VIEWS[exercise.id] ?? VIEWS[exercise.view ?? 'full'] ?? VIEWS.full }
 export const loadLibrary = () => libraryPromise ??= fetch(`${ASSET}exercises.json`).then(r => { if (!r.ok) throw new Error('Exercise data could not be loaded'); return r.json() })
 export const loadModel = () => modelPromise ??= new GLTFLoader().loadAsync(`${ASSET}exercises.glb`).then(g => { g.scene.userData.animations = g.animations; return g.scene })
 export function addLights(scene: THREE.Scene) { scene.add(new THREE.HemisphereLight(0xfff7e9, 0x756553, 2.1)); const key = new THREE.DirectionalLight(0xfff2df, 2.5); key.position.set(2, 4, 4); scene.add(key) }

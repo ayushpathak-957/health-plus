@@ -13,7 +13,8 @@ Create an optimized production build with `npm run build`. Verify the bundled da
 
 ## Design notes
 
-- Before GIFs exist, the library uses a shared, scissor-rendered WebGL canvas as a live-preview fallback. After GIF generation, cards use local GIF assets and no thumbnail WebGL renderer is started.
+- The grid uses saved local GIFs only. It never starts a thumbnail WebGL renderer.
+- The Avatar dropdown selects Man · Athletic (default), Woman · Casual, or the original wooden mannequin. The selection is remembered locally and applies to both the grid and interactive exercise page.
 - The detailed page uses its own interactive Three.js scene with OrbitControls: drag to orbit, scroll to zoom, and right-drag to pan.
 - Calorie estimates are intentionally approximate. `src/data/calorieEstimates.ts` centralizes MET values (broad comparisons to the [2024 Adult Compendium](https://pacompendium.com/)), the reference 70 kg weight, set-duration parsing, and the formula.
 
@@ -44,4 +45,24 @@ Generate the complete reusable library:
 npm run generate-previews
 ```
 
-Files are stored in `public/previews/<exercise-id>.gif`. The script skips any existing GIF automatically, writes `public/previews/manifest.json` as it progresses, and resumes safely after interruption. Use `--force` only when you explicitly want to recreate existing previews. The website reads the manifest and automatically switches each generated card from live WebGL to its saved GIF on the next browser refresh.
+Wooden mannequin files are stored in `public/previews/<exercise-id>.gif`. The website reads the manifest on load and uses saved previews.
+
+### Clothed avatars
+
+Both rigged avatars and their textures are bundled locally in `public/assets/avatars/`. They use the same exercise animation clips through `src/three/avatarRig.js`, shared by the interactive viewer and GIF renderer. The source rigs have different body proportions, so retargeting preserves their own limb lengths.
+
+Generate the complete avatar preview sets once:
+
+```bash
+npm run generate-avatar-previews
+```
+
+Outputs are `public/previews/man-athletic/<exercise-id>.gif`, `public/previews/woman-casual/<exercise-id>.gif`, and `public/previews/<exercise-id>.gif` for the wooden mannequin. Each set has its own `manifest.json`. Generated files are reusable static assets, including in production builds; running the website never regenerates them. The pipeline verifies and skips existing GIFs, saves each result atomically, and resumes after interruption. Refresh the website after generation.
+
+The standard preview size is 360 × 300 with a 256-colour palette so card previews stay crisp on current displays. Pass `--width`, `--height`, or `--colors` only when intentionally choosing a different trade-off between image quality and file size.
+
+Optional flags: `--avatar man-athletic`, `--category yoga`, `--limit 5`, `--ids chair-march,plank-full`, or `--force` to rebuild existing files after changing the model or rig adapter. Windows uses local Direct3D acceleration; `--software` uses Chromium's default renderer if needed. Rendering permits only the local asset server and makes no cloud, AI, or external API calls.
+
+Validate all three complete preview sets with `python scripts/validate_avatar_previews.py`. For browser checks, start the dev server, then run `python scripts/verify_avatar_ui.py http://localhost:5173` using the port Vite reports. Review images are saved under `.artifacts/avatars/`.
+
+Avatar sources: [Man, athletic](https://grab3d.com/models/characters/man-base-character/) and [Woman, casual](https://grab3d.com/models/characters/woman/) from Grab3D. Both downloads include CC0 declarations, preserved as `public/assets/avatars/LICENSE-man.txt` and `LICENSE-woman.txt`. Grab3D describes these as AI-assisted models cleaned up in Blender.
