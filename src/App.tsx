@@ -25,8 +25,9 @@ export default function App() {
   if (error) return <main className="status"><CircleAlert size={34}/><h1>We couldn’t load the exercise library</h1><p>{error}</p></main>
   if (!library) return <main className="status"><LoaderCircle className="spin" size={34}/><h1>Loading Exercise Library</h1><p>Preparing the movement collection…</p></main>
   if (exercise) return <DetailPage exercise={exercise} library={library} onBack={close} avatar={avatar} onAvatar={chooseAvatar}/>
-  const priority = (id: string) => (id === 'jumping-jacks' ? -2 : id === 'step-jack' ? -1 : 0)
-  const shown = (category === 'all' ? library.exercises : library.exercises.filter(e => e.category === category)).slice().sort((a, b) => category === 'all' ? priority(a.id) - priority(b.id) : 0)
+  const FEATURED_ORDER = ['push-up', 'squat', 'lunges', 'crunch', 'high-knees', 'jumping-jacks', 'plank', 'wall-sit']
+  const priority = (id: string) => { const idx = FEATURED_ORDER.indexOf(id); return idx === -1 ? 9999 : idx }
+  const shown = (category === 'all' ? library.exercises : library.exercises.filter(e => e.category === category)).slice().sort((a, b) => priority(a.id) - priority(b.id))
   return <main>
     <header className="site-header"><div><p className="eyebrow">Desk Break collection</p><h1>Exercise Library</h1><p className="subtitle">Explore {library.exercises.length} guided movements</p></div><div className="count-pill"><Rotate3D size={18}/><span>{library.exercises.length} exercises</span></div></header>
     <div className="library-layout"><aside className="sidebar"><p className="filter-title">Exercise categories</p><nav><button className={category === 'all' ? 'active' : ''} onClick={() => setCategory('all')}>All exercises <span>{library.exercises.length}</span></button>{library.categories.map(c => <button key={c.id} className={category === c.id ? 'active' : ''} onClick={() => setCategory(c.id)}>{c.en}<span>{library.exercises.filter(e => e.category === c.id).length}</span></button>)}</nav></aside>

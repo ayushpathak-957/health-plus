@@ -28,7 +28,7 @@ export default function ExerciseViewer({ exercise, playing, speed, avatar }: { e
     Promise.all([loadModel(), avatar === 'wood' ? Promise.resolve(null) : loadAvatar(avatar)]).then(([source, template]) => {
       if (disposed) return
       figure = clone(source); figure.traverse(o => { if ((o as THREE.SkinnedMesh).isSkinnedMesh) o.frustumCulled = false })
-      if (template) { adapter = createAvatar(figure, template); scene.add(adapter.figure) } else scene.add(figure)
+      if (template) { adapter = createAvatar(figure, template, exercise.id); scene.add(adapter.figure) } else scene.add(figure)
       if (exercise.seated) { chair = createChair(); scene.add(chair) }
       const clip = clipFor(exercise, source); if (!clip) throw new Error('Exercise animation unavailable')
       mixer = new THREE.AnimationMixer(figure); mixerRef.current = mixer

@@ -13,6 +13,8 @@ export const VIEWS: Record<string, [[number, number, number], [number, number, n
 // slightly top-down general standing angle.
 const EXERCISE_VIEWS: Record<string, [[number, number, number], [number, number, number]]> = {
   'standing-cat-cow': [[1.6, 1.02, 4.8], [0, .98, 0]],
+  'push-up': [[3.2, 1.2, 1.35], [0, .3, 0]],
+  crunch: [[3.2, 1.45, 1.15], [0, .27, 0]],
 }
 export function viewFor(exercise: Exercise) { return EXERCISE_VIEWS[exercise.id] ?? VIEWS[exercise.view ?? 'full'] ?? VIEWS.full }
 export const loadLibrary = () => libraryPromise ??= fetch(`${ASSET}exercises.json`).then(r => { if (!r.ok) throw new Error('Exercise data could not be loaded'); return r.json() })

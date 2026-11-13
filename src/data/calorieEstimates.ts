@@ -1,12 +1,20 @@
 import type { Exercise } from '../types'
 
 const MET_BY_CATEGORY: Record<string, number> = {
+  aerobic: 6.0, holds: 3.8,
   'cardio-low-impact': 4.0, dance: 4.5, yoga: 2.8, balance: 2.5,
   'hips-legs': 3.5, 'back-spine': 2.5, 'neck-shoulders-arms': 2.3,
   chair: 2.0, 'floor-lying': 2.5, 'floor-seated': 2.2, funny: 2.8,
 }
 const EXERCISE_MET: Record<string, number> = {
-  'jumping-jacks': 8.0, // Calisthenics: jumping jacks, vigorous effort (2024 Adult Compendium #02050)
+  'jumping-jacks': 8.0,
+  'push-up': 8.0,
+  squat: 5.5,
+  lunges: 5.0,
+  crunch: 3.8,
+  'high-knees': 8.0,
+  plank: 3.8,
+  'wall-sit': 3.5,
 }
 const REFERENCE_WEIGHT_KG = 70
 
