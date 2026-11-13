@@ -15,8 +15,8 @@ async def main():
         await page.goto(url)
         dropdown=page.get_by_role('combobox',name='Avatar',exact=True)
         await expect(dropdown).to_have_value('man-athletic')
-        await expect(page.locator('.exercise-card')).to_have_count(435)
-        await expect(page.locator('.exercise-card').first.locator('h3')).to_have_text('Jumping jacks (low impact)')
+        await expect(page.locator('.exercise-card')).to_have_count(436)
+        await expect(page.locator('.exercise-card').first.locator('h3')).to_have_text('Jumping jacks')
         await expect(page.locator('canvas')).to_have_count(0)
         for avatar in ['man-athletic','woman-casual','wood']:
             await dropdown.select_option(avatar)

@@ -5,6 +5,9 @@ const MET_BY_CATEGORY: Record<string, number> = {
   'hips-legs': 3.5, 'back-spine': 2.5, 'neck-shoulders-arms': 2.3,
   chair: 2.0, 'floor-lying': 2.5, 'floor-seated': 2.2, funny: 2.8,
 }
+const EXERCISE_MET: Record<string, number> = {
+  'jumping-jacks': 8.0, // Calisthenics: jumping jacks, vigorous effort (2024 Adult Compendium #02050)
+}
 const REFERENCE_WEIGHT_KG = 70
 
 export function suggestedSetMinutes(exercise: Exercise): number {
@@ -17,7 +20,7 @@ export function suggestedSetMinutes(exercise: Exercise): number {
 }
 
 export function caloriesForSuggestedSet(exercise: Exercise): number {
-  const met = MET_BY_CATEGORY[exercise.category] ?? 2.5
+  const met = EXERCISE_MET[exercise.id] ?? MET_BY_CATEGORY[exercise.category] ?? 2.5
   return met * 3.5 * REFERENCE_WEIGHT_KG * suggestedSetMinutes(exercise) / 200
 }
 

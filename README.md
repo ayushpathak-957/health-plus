@@ -1,6 +1,6 @@
 # Exercise Library
 
-A React + Three.js exercise library powered by the 435-animation [Desk Break](https://github.com/shlomorsh/desk-break) collection.
+A React + Three.js exercise library powered by the Desk Break collection plus a locally authored jumping-jacks animation.
 
 ## Run
 

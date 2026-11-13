@@ -16,7 +16,7 @@ export default function App() {
   const [avatar, setAvatar] = useState<AvatarId>(() => { try { const saved = localStorage.getItem('health-plus-avatar'); return avatars.find(a => a.id === saved)?.id ?? 'man-athletic' } catch { return 'man-athletic' } })
   const chooseAvatar = (id: AvatarId) => { setAvatar(id); try { localStorage.setItem('health-plus-avatar', id) } catch { /* Private browser storage may be unavailable. */ } }
   const [selected, setSelected] = useState<string | null>(() => new URLSearchParams(location.search).get('exercise'))
-  useEffect(() => { loadLibrary().then(data => setLibrary({ ...data, exercises: data.exercises.map((exercise: Exercise) => exercise.id === 'step-jack' ? { ...exercise, en: 'Jumping jacks (low impact)' } : exercise) })).catch(e => setError(e.message)) }, [])
+  useEffect(() => { loadLibrary().then(setLibrary).catch(e => setError(e.message)) }, [])
   useEffect(() => { let active = true; setGifIds(new Set()); fetch(`${previewBase(avatar)}/manifest.json`).then(response => response.ok ? response.json() : []).then((ids: unknown) => { if (active && Array.isArray(ids)) setGifIds(new Set(ids.filter((id): id is string => typeof id === 'string'))) }).catch(() => undefined); return () => { active = false } }, [avatar])
   const exercise = useMemo(() => library?.exercises.find(e => e.id === selected), [library, selected])
   const open = (id: string) => { history.pushState({}, '', `?exercise=${encodeURIComponent(id)}`); setSelected(id); window.scrollTo(0,0) }
@@ -25,7 +25,8 @@ export default function App() {
   if (error) return <main className="status"><CircleAlert size={34}/><h1>We couldn’t load the exercise library</h1><p>{error}</p></main>
   if (!library) return <main className="status"><LoaderCircle className="spin" size={34}/><h1>Loading Exercise Library</h1><p>Preparing the movement collection…</p></main>
   if (exercise) return <DetailPage exercise={exercise} library={library} onBack={close} avatar={avatar} onAvatar={chooseAvatar}/>
-  const shown = (category === 'all' ? library.exercises : library.exercises.filter(e => e.category === category)).slice().sort((a, b) => category === 'all' && a.id === 'step-jack' ? -1 : category === 'all' && b.id === 'step-jack' ? 1 : 0)
+  const priority = (id: string) => (id === 'jumping-jacks' ? -2 : id === 'step-jack' ? -1 : 0)
+  const shown = (category === 'all' ? library.exercises : library.exercises.filter(e => e.category === category)).slice().sort((a, b) => category === 'all' ? priority(a.id) - priority(b.id) : 0)
   return <main>
     <header className="site-header"><div><p className="eyebrow">Desk Break collection</p><h1>Exercise Library</h1><p className="subtitle">Explore {library.exercises.length} guided movements</p></div><div className="count-pill"><Rotate3D size={18}/><span>{library.exercises.length} exercises</span></div></header>
     <div className="library-layout"><aside className="sidebar"><p className="filter-title">Exercise categories</p><nav><button className={category === 'all' ? 'active' : ''} onClick={() => setCategory('all')}>All exercises <span>{library.exercises.length}</span></button>{library.categories.map(c => <button key={c.id} className={category === c.id ? 'active' : ''} onClick={() => setCategory(c.id)}>{c.en}<span>{library.exercises.filter(e => e.category === c.id).length}</span></button>)}</nav></aside>
